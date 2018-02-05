@@ -10,6 +10,7 @@ namespace gpmdp_rdr
     {
         private Player _player;
         private DateTime _lastUpdate;
+        private string _saveLocation;
 
         public Watcher() {
             _lastUpdate = DateTime.UtcNow;
@@ -26,6 +27,10 @@ namespace gpmdp_rdr
         // TODO is this necessary?
         [PermissionSet(SecurityAction.Demand, Name="FullTrust")]
         public void Run(string JsonStoreDirectory, string SaveSongNameLocation) {
+            // Handle process exiting here as this is where we have the most context
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(ProcessExit);
+
+            _saveLocation = SaveSongNameLocation;
 
             if (!this.ValidatePaths(JsonStoreDirectory, SaveSongNameLocation)) {
                 Console.WriteLine("Paths are not valid");
@@ -87,6 +92,19 @@ namespace gpmdp_rdr
         private void OnError(object source, System.IO.ErrorEventArgs e) {
             Console.WriteLine($"Error occurred: {e.GetException().Message}");
             Environment.Exit(2);
+        }
+
+        private void ProcessExit(object sender, EventArgs e) {
+            if (_saveLocation == string.Empty) { return; }
+
+            // Write a final line to the song file
+            try {
+                File.WriteAllText(_saveLocation, "GPMDP Reader has stopped");
+            } catch (Exception exception) {
+                // We're exiting, these don't matter
+            }
+
+            return;
         }
     }
 }
