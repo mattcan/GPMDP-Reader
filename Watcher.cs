@@ -86,6 +86,10 @@ namespace gpmdp_rdr
             JToken songJson = playback["song"];
 
             Song song = songJson.ToObject<Song>();
+            song.Playing = playback["playing"].ToObject<bool>();
+
+            Console.WriteLine($"JSON says song is playing: {song.Playing}");
+
             _player.Update(song);
         }
 

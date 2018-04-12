@@ -14,17 +14,36 @@ namespace gpmdp_rdr
         }
 
         public void Update(Song song) {
-            if (_currentSong.Title == song.Title && _currentSong.Artist == song.Artist) {
-                return;
-            }
+            if (!SongHasChanged(song)) { return; }
+
             _currentSong = song;
 
+            Console.WriteLine($"Song playing: {song.Playing}");
+            if (song.IsEmpty() || !song.Playing) {
+                WriteToFile("Music has stopped");
+                return;
+            }
+
+            // Ultimately this is the update so, need to make
+            // sure we get this far..
+            WriteToFile($"Now Playing: {song.ToString()}");
+        }
+
+        private void WriteToFile(string message) {
             try {
-                File.WriteAllText(_saveLocation, $"Now playing: {song.ToString()}");
+                File.WriteAllText(_saveLocation, message);
             } catch (Exception e) {
                 Console.WriteLine($"Error occurred: {e.Message}");
                 Environment.Exit(1);
             }
+        }
+
+        private bool SongHasChanged(Song NewSong) {
+            return _currentSong.Playing != NewSong.Playing;
+            /*
+                || _currentSong.Artist != NewSong.Artist
+                || _currentSong.Title != NewSong.Title;
+            /**/
         }
     }
 }
