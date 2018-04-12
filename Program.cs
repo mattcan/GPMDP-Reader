@@ -14,8 +14,8 @@ namespace gpmdp_rdr
                 return;
             }
 
-            Watcher w = new Watcher();
-            w.Run(args[0], args[1]);
+            JsonApi w = new JsonApi(args[0]);
+            w.Start();
         }
     }
 }

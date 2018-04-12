@@ -6,14 +6,25 @@ using Newtonsoft.Json.Linq;
 
 namespace gpmdp_rdr
 {
-    public class Watcher
+    public class JsonApi : IProvider
     {
         private Player _player;
         private DateTime _lastUpdate;
         private string _saveLocation;
+        private string _jsonApiFile = "playback.json";
+        private string _jsonApiDirectory;
 
-        public Watcher() {
+        public JsonApi(string JsonStoreDirectory) {
             _lastUpdate = DateTime.UtcNow;
+            _jsonApiDirectory = JsonStoreDirectory;
+        }
+
+        public void Start() {
+            this.Run(_jsonApiDirectory, "current_song.txt");
+        }
+
+        public bool IsUseable() {
+            return false;
         }
 
         private bool ValidatePaths(string JsonStoreDirectory, string SaveSongNameLocation) {
