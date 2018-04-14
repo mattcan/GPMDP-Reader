@@ -3,8 +3,9 @@ using System.IO;
 using System.Security.Permissions;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
+using gpmdp_rdr.Music;
 
-namespace gpmdp_rdr
+namespace gpmdp_rdr.Providers
 {
     public class JsonApi : IProvider
     {

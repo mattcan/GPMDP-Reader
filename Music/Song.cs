@@ -1,4 +1,4 @@
-namespace gpmdp_rdr
+namespace gpmdp_rdr.Music
 {
     // TODO add some tests, this should be dummy proof..
     public class Song

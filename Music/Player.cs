@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace gpmdp_rdr
+namespace gpmdp_rdr.Music
 {
     public class Player
     {
