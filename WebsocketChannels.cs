@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Reflection;
+using Xunit;
 
 namespace gpmdp_rdr
 {
@@ -65,6 +66,15 @@ namespace gpmdp_rdr
                 ) as DescriptionAttribute;
             
             return attr != null ? attr.Description : string.Empty;
+        }
+    }
+
+    public class TestChannelExtensions
+    {
+        [Fact]
+        public void TestChannelHasDescription() {
+            Channel c = Channel.API_VERSION;
+            Assert.Equal("API_VERSION", c.GetDescription());
         }
     }
 }
