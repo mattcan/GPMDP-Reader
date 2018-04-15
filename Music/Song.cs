@@ -1,6 +1,5 @@
 namespace gpmdp_rdr.Music
 {
-    // TODO add some tests, this should be dummy proof..
     public class Song
     {
         public string Title { get; set; } = string.Empty;

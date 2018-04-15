@@ -36,7 +36,7 @@ namespace gpmdp_rdr.Music
                 File.WriteAllText(_saveLocation, message);
             } catch (Exception e) {
                 Console.WriteLine($"Error occurred: {e.Message}");
-                Environment.Exit(1);
+                Program.ExitWith(ExitCode.PLAYER_UNABLE_TO_WRITE_FILE);
             }
         }
 

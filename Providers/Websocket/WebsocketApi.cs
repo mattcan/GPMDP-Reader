@@ -1,4 +1,5 @@
 using gpmdp_rdr.Music;
+using gpmdp_rdr.Providers.WebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Semver;
@@ -8,7 +9,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace gpmdp_rdr.Providers.WebSocket
+namespace gpmdp_rdr.Providers
 {
     public class WebsocketApi : IProvider
     {
@@ -17,7 +18,15 @@ namespace gpmdp_rdr.Providers.WebSocket
 
         async public static Task<WebsocketApi> CreateWebsocketApi() {
             ClientWebSocket client = new ClientWebSocket();
-            await client.ConnectAsync(new Uri(WebsocketApi._connectionUrl), CancellationToken.None);
+
+            try {
+                // TODO use debug method
+                Console.WriteLine($"Attempting to connect to {_connectionUrl}");
+                await client.ConnectAsync(new Uri(WebsocketApi._connectionUrl), CancellationToken.None);
+            } catch (Exception e) {
+                // TODO use debug method
+                Console.WriteLine($"Unable to connect: {e.Message}");
+            }
 
             return new WebsocketApi(client);
         }
@@ -32,7 +41,10 @@ namespace gpmdp_rdr.Providers.WebSocket
         }
 
         public bool IsUseable() {
-            return _serverConnection.State == WebSocketState.Open;
+            var useable = _serverConnection.State == WebSocketState.Open;
+            // TODO use debug method
+            Console.WriteLine($"Websocket is useable: {useable}");
+            return useable;
         }
 
         // Documentation: https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-/blob/master/docs/PlaybackAPI_WebSocket.md
@@ -41,10 +53,13 @@ namespace gpmdp_rdr.Providers.WebSocket
 
             while (_serverConnection.State == WebSocketState.Open) {
                 var socketMessage = await this.RetrieveMessage();
-                dynamic message;
+                dynamic message = null;
                 using (var sr = new StreamReader(socketMessage)) {
                     message = JObject.Parse(sr.ReadToEnd());
                 }
+
+                // TODO Add a logger with debug command
+                // Console.WriteLine($"Channel is {(string)message.channel}");
 
                 if (message.channel == Channel.API_VERSION.GetDescription()) {
                     this.VersionCompatible((string)message.payload);
@@ -67,16 +82,20 @@ namespace gpmdp_rdr.Providers.WebSocket
             ArraySegment<Byte> buffer = new ArraySegment<byte>(new Byte[8192]);
             WebSocketReceiveResult result = null;
 
-            using(var stream = new MemoryStream()) {
-                do {
+            var stream = new MemoryStream();
+            do {
+                try {
                     result = await _serverConnection.ReceiveAsync(buffer, CancellationToken.None);
                     stream.Write(buffer.Array, buffer.Offset, result.Count);
-                } while (!result.EndOfMessage);
+                } catch (Exception e) {
+                    Console.WriteLine($"Failed to retrieve message: {e.Message}");
+                    Program.ExitWith(ExitCode.WEBSOCKET_MESSAGE_RETRIEVAL_FAILED);
+                }
+            } while (!result.EndOfMessage);
 
-                stream.Seek(0, SeekOrigin.Begin);
+            stream.Seek(0, SeekOrigin.Begin);
 
-                return stream;
-            }
+            return stream;
         }
 
         private void VersionCompatible(string apiVersion) {
@@ -86,7 +105,7 @@ namespace gpmdp_rdr.Providers.WebSocket
             }
 
             var minVersion = SemVersion.Parse("1.0.0");
-            if (apiSemVersion <= minVersion) {
+            if (apiSemVersion < minVersion) {
                 Program.ExitWith(ExitCode.WEBSOCKET_API_MISMATCH);
             }
         }

@@ -25,6 +25,9 @@ namespace gpmdp_rdr.Providers
         }
 
         public bool IsUseable() {
+            // TODO should check the last time the json store was written to
+            // or maybe watch it for a second to see if it gets multiple writes?
+            // or check if file exists
             return false;
         }
 
