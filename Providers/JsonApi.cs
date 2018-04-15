@@ -107,7 +107,7 @@ namespace gpmdp_rdr.Providers
 
         private void OnError(object source, System.IO.ErrorEventArgs e) {
             Console.WriteLine($"Error occurred: {e.GetException().Message}");
-            Environment.Exit(2);
+            Program.ExitWith(ExitCode.JSON_API_EXCEPTION);
         }
 
         private void ProcessExit(object sender, EventArgs e) {

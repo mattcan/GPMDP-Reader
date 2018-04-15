@@ -18,5 +18,9 @@ namespace gpmdp_rdr
             JsonApi w = new JsonApi(args[0]);
             w.Start();
         }
+
+        public static void ExitWith(ExitCode Code) {
+            Environment.Exit((int) Code);
+        }
     }
 }
