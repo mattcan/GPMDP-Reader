@@ -20,8 +20,8 @@ namespace gpmdp_rdr.Providers
             _jsonApiDirectory = JsonStoreDirectory;
         }
 
-        public void Start() {
-            this.Run(_jsonApiDirectory, "current_song.txt");
+        public void Start(string saveFileName) {
+            this.Run(_jsonApiDirectory, saveFileName);
         }
 
         public bool IsUseable() {

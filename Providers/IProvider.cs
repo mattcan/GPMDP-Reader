@@ -2,7 +2,7 @@ namespace gpmdp_rdr
 {
     interface IProvider
     {
-        void Start();
+        void Start(string saveFileName);
 
         bool IsUseable();
     }

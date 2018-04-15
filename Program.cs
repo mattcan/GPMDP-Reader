@@ -16,7 +16,7 @@ namespace gpmdp_rdr
             }
 
             JsonApi w = new JsonApi(args[0]);
-            w.Start();
+            w.Start(args[1]);
         }
 
         public static void ExitWith(ExitCode Code) {

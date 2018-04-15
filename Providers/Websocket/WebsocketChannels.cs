@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Reflection;
 using Xunit;
 
-namespace gpmdp_rdr
+namespace gpmdp_rdr.Providers.WebSocket
 {
     public enum Channel
     {
