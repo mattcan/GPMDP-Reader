@@ -8,6 +8,8 @@ namespace gpmdp_rdr.Music
         private Song _currentSong;
         private string _saveLocation;
 
+        private bool _isPlaying = false;
+
         public Player(String writeToFilePath) {
             _saveLocation = writeToFilePath;
             _currentSong = new Song();
@@ -18,15 +20,15 @@ namespace gpmdp_rdr.Music
 
             _currentSong = song;
 
-            Console.WriteLine($"Song playing: {song.Playing}");
-            if (song.IsEmpty() || !song.Playing) {
-                WriteToFile("Music has stopped");
-                return;
-            }
+            WriteToFile($"Current Song: {song.ToString()}");
+        }
 
-            // Ultimately this is the update so, need to make
-            // sure we get this far..
-            WriteToFile($"Now Playing: {song.ToString()}");
+        public void Stop() {
+            _isPlaying = false;
+        }
+
+        public void Start() {
+            _isPlaying  = true;
         }
 
         private void WriteToFile(string message) {
@@ -39,11 +41,8 @@ namespace gpmdp_rdr.Music
         }
 
         private bool SongHasChanged(Song NewSong) {
-            return _currentSong.Playing != NewSong.Playing;
-            /*
-                || _currentSong.Artist != NewSong.Artist
+            return _currentSong.Artist != NewSong.Artist
                 || _currentSong.Title != NewSong.Title;
-            /**/
         }
     }
 }
