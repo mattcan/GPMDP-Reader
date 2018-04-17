@@ -21,10 +21,9 @@ namespace gpmdp_rdr.Providers
 
             try {
                 // TODO use debug method
-                Console.WriteLine($"Attempting to connect to {_connectionUrl}");
+                Logger.Debug($"Attempting to connect to {_connectionUrl}");
                 await client.ConnectAsync(new Uri(WebsocketApi._connectionUrl), CancellationToken.None);
             } catch (Exception e) {
-                // TODO use debug method
                 Console.WriteLine($"Unable to connect: {e.Message}");
             }
 
@@ -42,37 +41,41 @@ namespace gpmdp_rdr.Providers
 
         public bool IsUseable() {
             var useable = _serverConnection.State == WebSocketState.Open;
-            // TODO use debug method
-            Console.WriteLine($"Websocket is useable: {useable}");
+            Logger.Debug($"Websocket is useable: {useable}");
+
             return useable;
         }
 
         // Documentation: https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-/blob/master/docs/PlaybackAPI_WebSocket.md
-        async public void Start(string saveFileName) {
+        public async Task Start(string saveFileName) {
+            Logger.Debug("Starting Websocket API Reader");
             _player = new Player(saveFileName);
 
             while (_serverConnection.State == WebSocketState.Open) {
                 var socketMessage = await this.RetrieveMessage();
-                dynamic message = null;
+                JObject message = null;
                 using (var sr = new StreamReader(socketMessage)) {
                     message = JObject.Parse(sr.ReadToEnd());
                 }
 
-                // TODO Add a logger with debug command
-                // Console.WriteLine($"Channel is {(string)message.channel}");
+                string channel = message["channel"].ToObject<string>();
+                Logger.Debug($"Channel is {channel}");
 
-                if (message.channel == Channel.API_VERSION.GetDescription()) {
-                    this.VersionCompatible((string)message.payload);
+                if (channel == Channel.API_VERSION.GetDescription()) {
+                    string versionNumber = message["payload"].ToObject<string>();
+                    this.VersionCompatible(versionNumber);
                     continue;
                 }
 
-                if (message.channel == Channel.PLAY_STATE.GetDescription()) {
-                    this.PlayState((bool)message.payload);
+                if (channel == Channel.PLAY_STATE.GetDescription()) {
+                    bool state = message["payload"].ToObject<bool>();
+                    this.PlayState(state);
                     continue;
                 }
 
-                if (message.channel == Channel.TRACK.GetDescription()) {
-                    this.NewTrack(message.payload);
+                if (channel == Channel.TRACK.GetDescription()) {
+                    Song song = message["payload"].ToObject<Song>();
+                    this.NewTrack(song);
                     continue;
                 }
             }
@@ -115,14 +118,8 @@ namespace gpmdp_rdr.Providers
             else { _player.Stop(); }
         }
 
-        private void NewTrack(dynamic track) {
-            var song = new Song() {
-                Title = track.title,
-                Artist = track.artist,
-                Album = track.album
-            };
-
-            _player.Update(song);
+        private void NewTrack(Song track) {
+            _player.Update(track);
         }
     }
 }

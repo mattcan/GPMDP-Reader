@@ -1,9 +1,10 @@
+using gpmdp_rdr.Music;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Security.Permissions;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Linq;
-using gpmdp_rdr.Music;
+using System.Threading.Tasks;
 
 namespace gpmdp_rdr.Providers
 {
@@ -20,53 +21,38 @@ namespace gpmdp_rdr.Providers
             _jsonApiDirectory = JsonStoreDirectory;
         }
 
-        public void Start(string saveFileName) {
+        public async Task Start(string saveFileName) {
+            Logger.Debug("Starting JSON API Reader");
             this.Run(_jsonApiDirectory, saveFileName);
         }
 
         public bool IsUseable() {
-            // TODO should check the last time the json store was written to
-            // or maybe watch it for a second to see if it gets multiple writes?
-            // or check if file exists
-            return false;
-        }
+            if (!Directory.Exists(_jsonApiDirectory)) { return false; }
 
-        private bool ValidatePaths(string JsonStoreDirectory, string SaveSongNameLocation) {
-            if (!Directory.Exists(JsonStoreDirectory)) { return false; }
+            if (!File.Exists(Path.Combine(_jsonApiDirectory, _jsonApiFile))) { return false; }
 
-            // TODO pop file name and check directory for song
+            var lastAccess = File.GetLastAccessTimeUtc(Path.Combine(_jsonApiDirectory, _jsonApiFile));
+            if (lastAccess.AddMinutes(15) >= DateTime.UtcNow) { return false; }
 
+            Logger.Debug("JsonAPI is useable");
             return true;
         }
 
-        // TODO is this necessary?
-        [PermissionSet(SecurityAction.Demand, Name="FullTrust")]
         public void Run(string JsonStoreDirectory, string SaveSongNameLocation) {
+            _saveLocation = SaveSongNameLocation;
+            _player = new Player(SaveSongNameLocation);
+
             // Handle process exiting here as this is where we have the most context
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(ProcessExit);
-
-            _saveLocation = SaveSongNameLocation;
-
-            if (!this.ValidatePaths(JsonStoreDirectory, SaveSongNameLocation)) {
-                Console.WriteLine("Paths are not valid");
-                Console.WriteLine("Usage: obs-gpmdp <json-store-directory> <write-to>");
-                return;
-            }
-
-            _player = new Player(SaveSongNameLocation);
 
             FileSystemWatcher watcher = new FileSystemWatcher() {
                 Path = JsonStoreDirectory,
                 NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite,
-                Filter = "playback.json"
+                Filter = _jsonApiFile
             };
             watcher.Changed += new FileSystemEventHandler(OnChanged);
             watcher.Error += new ErrorEventHandler(OnError);
             watcher.EnableRaisingEvents = true;
-
-            // TODO use this as a daemon/service
-            Console.WriteLine("Press \'q\' to quit the sample.");
-            while(Console.Read()!='q');
         }
 
         private void OnChanged(object source, FileSystemEventArgs e)
@@ -103,7 +89,7 @@ namespace gpmdp_rdr.Providers
             Song song = songJson.ToObject<Song>();
             song.Playing = playback["playing"].ToObject<bool>();
 
-            Console.WriteLine($"JSON says song is playing: {song.Playing}");
+            Logger.Debug($"JSON says song is playing: {song.Playing}");
 
             _player.Update(song);
         }

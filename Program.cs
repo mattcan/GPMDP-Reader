@@ -36,20 +36,22 @@ namespace gpmdp_rdr
 
             IProvider provider = null;
 
-           try { 
+            try {
                 provider = providers
                     .Where(entry => entry.Provider.IsUseable())
                     .OrderBy(entry => entry.Weight)
-                    .Single()
+                    .First()
                     .Provider;
-           } catch (Exception e) {
-               Console.WriteLine("No working API, please enable one in Google Play Music Desktop Player");
-               Program.ExitWith(ExitCode.NO_WORKING_PROVIDER);
-           }
+            } catch (Exception e) {
+                Logger.Debug($"Error: {e.Message}");
+                Console.WriteLine("No working API, please enable one in Google Play Music Desktop Player");
+                Program.ExitWith(ExitCode.NO_WORKING_PROVIDER);
+            }
 
-           provider.Start(args[1]);
+            await provider.Start(args[1]);
 
-           Console.ReadKey();
+            Console.WriteLine("Press \'q\' to quit the sample.");
+            while(Console.Read()!='q');
         }
 
         public static void ExitWith(ExitCode Code) {
