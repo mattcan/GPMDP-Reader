@@ -2,10 +2,16 @@ using System;
 
 namespace gpmdp_rdr
 {
-    public static class Logger
+    public class Logger
     {
-        public static void Debug(string message) {
-            if (true) {
+        public Logger(bool isDebugMode = false) {
+            this.DebugMode = isDebugMode;
+        }
+
+        public bool DebugMode { get; set; } = false;
+
+        public void Debug(string message) {
+            if (this.DebugMode) {
                 Console.WriteLine(message);
             }
         }

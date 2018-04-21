@@ -15,14 +15,16 @@ namespace gpmdp_rdr.Providers
         private string _saveLocation;
         private string _jsonApiFile = "playback.json";
         private string _jsonApiDirectory;
+        private Logger _logger;
 
-        public JsonApi(string JsonStoreDirectory) {
+        public JsonApi(string JsonStoreDirectory, Logger Logger) {
             _lastUpdate = DateTime.UtcNow;
             _jsonApiDirectory = JsonStoreDirectory;
+            _logger = Logger;
         }
 
         public async Task Start(string saveFileName) {
-            Logger.Debug("Starting JSON API Reader");
+            _logger.Debug("Starting JSON API Reader");
             this.Run(_jsonApiDirectory, saveFileName);
         }
 
@@ -34,7 +36,7 @@ namespace gpmdp_rdr.Providers
             var lastAccess = File.GetLastAccessTimeUtc(Path.Combine(_jsonApiDirectory, _jsonApiFile));
             if (lastAccess.AddMinutes(15) >= DateTime.UtcNow) { return false; }
 
-            Logger.Debug("JsonAPI is useable");
+            _logger.Debug("JsonAPI is useable");
             return true;
         }
 
@@ -89,7 +91,7 @@ namespace gpmdp_rdr.Providers
             Song song = songJson.ToObject<Song>();
             song.Playing = playback["playing"].ToObject<bool>();
 
-            Logger.Debug($"JSON says song is playing: {song.Playing}");
+            _logger.Debug($"JSON says song is playing: {song.Playing}");
 
             _player.Update(song);
         }

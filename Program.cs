@@ -18,14 +18,15 @@ namespace gpmdp_rdr
         static async Task Main(string[] args)
         {
             var options = Cli.Parse<CliArguments>(args);
+            var logger = new Logger(options.DebugMode);
 
             List<ProviderEntry> providers = new List<ProviderEntry>() {
                 new ProviderEntry() {
-                    Provider = new JsonApi(options.JsonApiPath),
+                    Provider = new JsonApi(options.JsonApiPath, logger),
                     Weight = 10
                 },
                 new ProviderEntry() {
-                    Provider = await WebsocketApi.CreateWebsocketApi(),
+                    Provider = await WebsocketApi.CreateWebsocketApi(logger),
                     Weight = 100
                 }
             };
@@ -39,7 +40,7 @@ namespace gpmdp_rdr
                     .First()
                     .Provider;
             } catch (Exception e) {
-                Logger.Debug($"Error: {e.Message}");
+                logger.Debug($"Error: {e.Message}");
                 Console.WriteLine("No working API, please enable one in Google Play Music Desktop Player");
                 Program.ExitWith(ExitCode.NO_WORKING_PROVIDER);
             }

@@ -16,7 +16,7 @@ namespace gpmdp_rdr.Providers
         #region static
         private static string _connectionUrl = "ws://localhost:5672";
 
-        async public static Task<WebsocketApi> CreateWebsocketApi() {
+        async public static Task<WebsocketApi> CreateWebsocketApi(Logger Logger) {
             ClientWebSocket client = new ClientWebSocket();
 
             try {
@@ -27,7 +27,7 @@ namespace gpmdp_rdr.Providers
                 Console.WriteLine($"Unable to connect: {e.Message}");
             }
 
-            return new WebsocketApi(client);
+            return new WebsocketApi(client, Logger);
         }
         #endregion
 
@@ -35,20 +35,23 @@ namespace gpmdp_rdr.Providers
 
         private Player _player;
 
-        private WebsocketApi(ClientWebSocket connection) {
+        private Logger _logger;
+
+        private WebsocketApi(ClientWebSocket connection, Logger Logger) {
             _serverConnection = connection;
+            _logger = Logger;
         }
 
         public bool IsUseable() {
             var useable = _serverConnection.State == WebSocketState.Open;
-            Logger.Debug($"Websocket is useable: {useable}");
+            _logger.Debug($"Websocket is useable: {useable}");
 
             return useable;
         }
 
         // Documentation: https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-/blob/master/docs/PlaybackAPI_WebSocket.md
         public async Task Start(string saveFileName) {
-            Logger.Debug("Starting Websocket API Reader");
+            _logger.Debug("Starting Websocket API Reader");
             _player = new Player(saveFileName);
 
             while (_serverConnection.State == WebSocketState.Open) {
@@ -59,7 +62,7 @@ namespace gpmdp_rdr.Providers
                 }
 
                 string channel = message["channel"].ToObject<string>();
-                Logger.Debug($"Channel is {channel}");
+                _logger.Debug($"Channel is {channel}");
 
                 if (channel == Channel.API_VERSION.GetDescription()) {
                     string versionNumber = message["payload"].ToObject<string>();
