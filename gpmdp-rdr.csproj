@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EntryPoint" Version="1.2.3" />
     <PackageReference Include="microsoft.testplatform.testhost" Version="15.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="semver" Version="2.0.4" />

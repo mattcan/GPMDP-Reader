@@ -1,4 +1,5 @@
 ﻿using gpmdp_rdr.Providers;
+using EntryPoint;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,16 +17,11 @@ namespace gpmdp_rdr
     {
         static async Task Main(string[] args)
         {
-            // TODO this might be wrong when its compiled to an executable
-            if(args.Length != 2) {
-                Console.WriteLine($"Require 2 arguments, received {args.Length}");
-                Console.WriteLine("Usage: obs-gpmdp <json-store-directory> <write-to>");
-                return;
-            }
+            var options = Cli.Parse<CliArguments>(args);
 
             List<ProviderEntry> providers = new List<ProviderEntry>() {
                 new ProviderEntry() {
-                    Provider = new JsonApi(args[0]),
+                    Provider = new JsonApi(options.JsonApiPath),
                     Weight = 10
                 },
                 new ProviderEntry() {
@@ -39,7 +35,7 @@ namespace gpmdp_rdr
             try {
                 provider = providers
                     .Where(entry => entry.Provider.IsUseable())
-                    .OrderBy(entry => entry.Weight)
+                    .OrderByDescending(entry => entry.Weight)
                     .First()
                     .Provider;
             } catch (Exception e) {
@@ -48,7 +44,7 @@ namespace gpmdp_rdr
                 Program.ExitWith(ExitCode.NO_WORKING_PROVIDER);
             }
 
-            await provider.Start(args[1]);
+            await provider.Start(options.SavePath);
 
             Console.WriteLine("Press \'q\' to quit the sample.");
             while(Console.Read()!='q');
