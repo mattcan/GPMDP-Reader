@@ -45,7 +45,7 @@ namespace gpmdp_rdr
                 Program.ExitWith(ExitCode.NO_WORKING_PROVIDER);
             }
 
-            await provider.Start(options.SavePath);
+            provider.Start(options.SavePath);
 
             Console.WriteLine("Press \'q\' to quit the sample.");
             while(Console.Read()!='q');

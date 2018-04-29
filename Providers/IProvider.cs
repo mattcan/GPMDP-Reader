@@ -4,7 +4,7 @@ namespace gpmdp_rdr
 {
     interface IProvider
     {
-        Task Start(string saveFileName);
+        void Start(string saveFileName);
 
         bool IsUseable();
     }

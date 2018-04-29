@@ -23,7 +23,7 @@ namespace gpmdp_rdr.Providers
             _logger = Logger;
         }
 
-        public async Task Start(string saveFileName) {
+        public void Start(string saveFileName) {
             _logger.Debug("Starting JSON API Reader");
             this.Run(_jsonApiDirectory, saveFileName);
         }
